@@ -11,5 +11,5 @@ drop_cols = [
     "PARENT_SR_NUMBER", "STREET_NUMBER", "STREET_DIRECTION", "STREET_NAME", "STREET_TYPE",
 ]
 
-df.drop(drop_cols)
+# df.drop(drop_cols)
 
