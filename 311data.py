@@ -1,0 +1,15 @@
+import polars as pl
+
+df = pl.scan_csv("311_Service_Requests_20260527.csv")
+
+print(df.schema)
+
+drop_cols = [
+    "CITY", "STATE", "ELECTRICAL_DISTRICT", "ELECTRICITY_GRID", "POLICE_SECTOR",
+    "POLICE_DISTRICT", "POLICE_BEAT", "PRECINCT", "SANITATION_DIVISION_DAYS",
+    "X_COORDINATE", "Y_COORDINATE", "LOCATION", "LEGACY_RECORD", "LEGACY_SR_NUMBER",
+    "PARENT_SR_NUMBER", "STREET_NUMBER", "STREET_DIRECTION", "STREET_NAME", "STREET_TYPE",
+]
+
+df.drop(drop_cols)
+
