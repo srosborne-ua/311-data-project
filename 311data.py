@@ -1,13 +1,18 @@
 import polars as pl
 
+connection_string = "postgresql://sageosborne@localhost:5432/chicago311"
+
 df = pl.scan_csv("311_Service_Requests_20260527.csv")
 
 drop_cols = [
-    "CITY", "STATE", "ELECTRICAL_DISTRICT", "ELECTRICITY_GRID", "POLICE_SECTOR",
+    "CITY", "STATE", "ZIP_CODE", "ELECTRICAL_DISTRICT", "ELECTRICITY_GRID", "POLICE_SECTOR",
     "POLICE_DISTRICT", "POLICE_BEAT", "PRECINCT", "SANITATION_DIVISION_DAYS",
     "X_COORDINATE", "Y_COORDINATE", "LOCATION", "LEGACY_RECORD", "LEGACY_SR_NUMBER",
     "PARENT_SR_NUMBER", "STREET_NUMBER", "STREET_DIRECTION", "STREET_NAME", "STREET_TYPE",
 ]
+
+
+#print(df.schema)
 
 df = df.drop(drop_cols)
 
@@ -34,3 +39,9 @@ df = df.with_columns([
 df = df.drop_nulls(subset=["LATITUDE", "LONGITUDE"])
 df = df.unique(subset=["SR_NUMBER"])
 df = df.filter(pl.col("DUPLICATE") == False)
+
+# streaming engine required due to RAM limitations on local machine 
+# if_table_exists is the correct arg name as of Polars 1.25+, originally experienced problems with
+# if_exists/on_conflict. polars documentation was usefull
+df.collect(engine="streaming").write_database("requests", connection_string, if_table_exists="replace", engine="adbc")
+
