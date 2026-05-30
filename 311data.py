@@ -37,6 +37,7 @@ df = df.with_columns([
 
 # get rid of duplicates and nulls
 df = df.drop_nulls(subset=["LATITUDE", "LONGITUDE"])
+df = df.drop_nulls(subset = "CLOSED_DATE")
 df = df.unique(subset=["SR_NUMBER"])
 df = df.filter(pl.col("DUPLICATE") == False)
 
@@ -45,3 +46,5 @@ df = df.filter(pl.col("DUPLICATE") == False)
 # if_exists/on_conflict. polars documentation was usefull
 df.collect(engine="streaming").write_database("requests", connection_string, if_table_exists="replace", engine="adbc")
 
+
+# database name: chicago311
