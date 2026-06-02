@@ -106,28 +106,60 @@ df = df.filter(pl.col("DUPLICATE") == False)
 # seasonal = pl.read_database_uri(query3, connection_string)
 # print(seasonal)
 
-query4 = """
-    WITH agency_stats AS (
-        SELECT 
-            "OWNER_DEPARTMENT",
-            AVG("RESPONSE_TIME_HOURS") as avg_response_hours,
-            COUNT(*) as total_requests
-        FROM requests
-        WHERE "SR_TYPE" NOT IN ('311 Information Only Call', 'Aircraft Noise Complaint')
-        GROUP BY "OWNER_DEPARTMENT"
-    )
+# query4 = """
+#     WITH agency_stats AS (
+#         SELECT 
+#             "OWNER_DEPARTMENT",
+#             AVG("RESPONSE_TIME_HOURS") as avg_response_hours,
+#             COUNT(*) as total_requests
+#         FROM requests
+#         WHERE "SR_TYPE" NOT IN ('311 Information Only Call', 'Aircraft Noise Complaint')
+#         GROUP BY "OWNER_DEPARTMENT"
+#     )
+#     SELECT 
+#         "OWNER_DEPARTMENT",
+#         avg_response_hours,
+#         total_requests,
+#         RANK() OVER (ORDER BY avg_response_hours ASC) as response_rank
+#     FROM agency_stats
+#     ORDER BY response_rank
+# """
+
+
+query5 = """
     SELECT 
-        "OWNER_DEPARTMENT",
-        avg_response_hours,
-        total_requests,
-        RANK() OVER (ORDER BY avg_response_hours ASC) as response_rank
-    FROM agency_stats
-    ORDER BY response_rank
+        "SR_TYPE",
+        "COMMUNITY_AREA_NAME",
+        COUNT(*) as count,
+        AVG("RESPONSE_TIME_HOURS") as avg_response_hours
+    FROM requests
+    WHERE "SR_TYPE" NOT IN ('311 Information Only Call', 'Aircraft Noise Complaint')
+    AND "COMMUNITY_AREA_NAME" IS NOT NULL
+    GROUP BY "SR_TYPE", "COMMUNITY_AREA_NAME"
+    ORDER BY "SR_TYPE", avg_response_hours DESC
 """
 
-agency_rankings = pl.read_database_uri(query4, connection_string)
+sr_by_area = pl.read_database_uri(query5, connection_string)
 with pl.Config(tbl_rows=50):
-    print(agency_rankings)
+    print(sr_by_area)
+
+
+top_types = (sr_by_area
+    .group_by("SR_TYPE")
+    .agg(pl.col("count").sum().alias("total"))
+    .sort("total", descending=True)
+    .head(5)
+    .get_column("SR_TYPE")
+    .to_list()
+)
+
+filtered = (sr_by_area
+    .filter(pl.col("SR_TYPE").is_in(top_types))
+    .sort(["SR_TYPE", "avg_response_hours"], descending=[False, True])
+)
+
+with pl.Config(tbl_rows=100):
+    print(filtered)
 
 # streaming engine required due to RAM limitations on local machine 
 # if_table_exists is the correct arg name as of Polars 1.25+, originally experienced problems with
