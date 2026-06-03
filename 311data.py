@@ -125,23 +125,32 @@ df = df.filter(pl.col("DUPLICATE") == False)
 #     ORDER BY response_rank
 # """
 
-
+# add something that created a proportion IN COMPARISON TO OTHER INCOME TYPES
 query5 = """
     SELECT 
-        "SR_TYPE",
-        "COMMUNITY_AREA_NAME",
+        r."SR_TYPE",
+        r."COMMUNITY_AREA_NAME",
         COUNT(*) as count,
-        AVG("RESPONSE_TIME_HOURS") as avg_response_hours
-    FROM requests
-    WHERE "SR_TYPE" NOT IN ('311 Information Only Call', 'Aircraft Noise Complaint')
-    AND "COMMUNITY_AREA_NAME" IS NOT NULL
-    GROUP BY "SR_TYPE", "COMMUNITY_AREA_NAME"
-    ORDER BY "SR_TYPE", avg_response_hours DESC
+        AVG(r."RESPONSE_TIME_HOURS") as avg_response_hours,
+        ROUND(
+            d."Under $25,000"::numeric / NULLIF(
+                d."Under $25,000" + d."$25,000 to $49,999" + d."$50,000 to $74,999" +
+                d."$75,000 to $125,000" + d."$125,000 +", 0
+            ), 4
+        ) as pct_under_25k
+    FROM requests r
+    LEFT JOIN community_demographics d
+        ON r."COMMUNITY_AREA_NAME" = d."COMMUNITY_AREA_NAME"
+    WHERE r."SR_TYPE" NOT IN ('311 Information Only Call', 'Aircraft Noise Complaint')
+    AND r."COMMUNITY_AREA_NAME" IS NOT NULL
+    GROUP BY r."SR_TYPE", r."COMMUNITY_AREA_NAME", d."Under $25,000", d."$25,000 to $49,999",
+             d."$50,000 to $74,999", d."$75,000 to $125,000", d."$125,000 +"
+    ORDER BY r."SR_TYPE", avg_response_hours DESC
 """
 
 sr_by_area = pl.read_database_uri(query5, connection_string)
 with pl.Config(tbl_rows=50):
-    print(sr_by_area)
+    print(sr_by_area) 
 
 
 top_types = (sr_by_area
@@ -158,8 +167,9 @@ filtered = (sr_by_area
     .sort(["SR_TYPE", "avg_response_hours"], descending=[False, True])
 )
 
-with pl.Config(tbl_rows=100):
-    print(filtered)
+#why am i printing both 
+# with pl.Config(tbl_rows=100): #what does 100 do?
+#     print(filtered)
 
 # streaming engine required due to RAM limitations on local machine 
 # if_table_exists is the correct arg name as of Polars 1.25+, originally experienced problems with
