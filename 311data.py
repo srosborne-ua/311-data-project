@@ -149,8 +149,8 @@ query5 = """
 """
 
 sr_by_area = pl.read_database_uri(query5, connection_string)
-with pl.Config(tbl_rows=50):
-    print(sr_by_area) 
+# with pl.Config(tbl_rows=50):
+#     print(sr_by_area) 
 
 
 top_types = (sr_by_area
@@ -168,8 +168,8 @@ filtered = (sr_by_area
 )
 
 #why am i printing both 
-# with pl.Config(tbl_rows=100): #what does 100 do?
-#     print(filtered)
+with pl.Config(tbl_rows=100): #what does 100 do?
+    print(filtered)
 
 # streaming engine required due to RAM limitations on local machine 
 # if_table_exists is the correct arg name as of Polars 1.25+, originally experienced problems with
