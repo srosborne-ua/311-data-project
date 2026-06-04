@@ -2,72 +2,72 @@ import polars as pl
 
 connection_string = "postgresql://sageosborne@localhost:5432/chicago311"
 
-df = pl.scan_csv("311_Service_Requests_20260527.csv")
+# df = pl.scan_csv("311_Service_Requests_20260527.csv")
 
-drop_cols = [
-    "CITY", "STATE", "ZIP_CODE", "ELECTRICAL_DISTRICT", "ELECTRICITY_GRID", "POLICE_SECTOR",
-    "POLICE_DISTRICT", "POLICE_BEAT", "PRECINCT", "SANITATION_DIVISION_DAYS",
-    "X_COORDINATE", "Y_COORDINATE", "LOCATION", "LEGACY_RECORD", "LEGACY_SR_NUMBER",
-    "PARENT_SR_NUMBER", "STREET_NUMBER", "STREET_DIRECTION", "STREET_NAME", "STREET_TYPE",
-]
-
-
-#print(df.schema)
-
-#matches areas to their actuall name 
-df = df.drop(drop_cols)
-
-community_area_names = {
-    "1": "Rogers Park", "2": "West Ridge", "3": "Uptown", "4": "Lincoln Square",
-    "5": "North Center", "6": "Lake View", "7": "Lincoln Park", "8": "Near North Side",
-    "9": "Edison Park", "10": "Norwood Park", "11": "Jefferson Park", "12": "Forest Glen",
-    "13": "North Park", "14": "Albany Park", "15": "Portage Park", "16": "Irving Park",
-    "17": "Dunning", "18": "Montclare", "19": "Belmont Cragin", "20": "Hermosa",
-    "21": "Avondale", "22": "Logan Square", "23": "Humboldt Park", "24": "West Town",
-    "25": "Austin", "26": "West Garfield Park", "27": "East Garfield Park", "28": "Near West Side",
-    "29": "North Lawndale", "30": "South Lawndale", "31": "Lower West Side", "32": "Loop",
-    "33": "Near South Side", "34": "Armour Square", "35": "Douglas", "36": "Oakland",
-    "37": "Fuller Park", "38": "Grand Boulevard", "39": "Kenwood", "40": "Washington Park",
-    "41": "Hyde Park", "42": "Woodlawn", "43": "South Shore", "44": "Chatham",
-    "45": "Avalon Park", "46": "South Chicago", "47": "Burnside", "48": "Calumet Heights",
-    "49": "Roseland", "50": "Pullman", "51": "South Deering", "52": "East Side",
-    "53": "West Pullman", "54": "Riverdale", "55": "Hegewisch", "56": "Garfield Ridge",
-    "57": "Archer Heights", "58": "Brighton Park", "59": "McKinley Park", "60": "Bridgeport",
-    "61": "New City", "62": "West Elsdon", "63": "Gage Park", "64": "Clearing",
-    "65": "West Lawn", "66": "Chicago Lawn", "67": "West Englewood", "68": "Englewood",
-    "69": "Greater Grand Crossing", "70": "Ashburn", "71": "Auburn Gresham", "72": "Beverly",
-    "73": "Washington Heights", "74": "Mount Greenwood", "75": "Morgan Park",
-    "76": "O'Hare", "77": "Edgewater"
-}
-
-df = df.with_columns([
-    pl.col("COMMUNITY_AREA").cast(pl.Utf8).replace(community_area_names).alias("COMMUNITY_AREA_NAME")
-])
-
-# Convert into more usefull date format
-df = df.with_columns([
-    pl.col("CREATED_DATE").str.to_datetime("%m/%d/%Y %I:%M:%S %p"),
-    pl.col("CLOSED_DATE").str.to_datetime("%m/%d/%Y %I:%M:%S %p")
-])
-
-# Compute response time 
-df = df.with_columns([
-    ((pl.col("CLOSED_DATE") - pl.col("CREATED_DATE"))
-    .dt.total_seconds() / 3600)
-    .alias("RESPONSE_TIME_HOURS")
-])
+# drop_cols = [
+#     "CITY", "STATE", "ZIP_CODE", "ELECTRICAL_DISTRICT", "ELECTRICITY_GRID", "POLICE_SECTOR",
+#     "POLICE_DISTRICT", "POLICE_BEAT", "PRECINCT", "SANITATION_DIVISION_DAYS",
+#     "X_COORDINATE", "Y_COORDINATE", "LOCATION", "LEGACY_RECORD", "LEGACY_SR_NUMBER",
+#     "PARENT_SR_NUMBER", "STREET_NUMBER", "STREET_DIRECTION", "STREET_NAME", "STREET_TYPE",
+# ]
 
 
-df = df.with_columns([
-    pl.col("SR_TYPE").str.strip_chars().str.to_titlecase(),
-    pl.col("COMMUNITY_AREA").cast(pl.Utf8).str.strip_chars()
-])
+# #print(df.schema)
 
-# get rid of duplicates and nulls
-df = df.drop_nulls(subset=["LATITUDE", "LONGITUDE"])
-df = df.drop_nulls(subset = "CLOSED_DATE")
-df = df.unique(subset=["SR_NUMBER"])
-df = df.filter(pl.col("DUPLICATE") == False)
+# #matches areas to their actuall name 
+# df = df.drop(drop_cols)
+
+# community_area_names = {
+#     "1": "Rogers Park", "2": "West Ridge", "3": "Uptown", "4": "Lincoln Square",
+#     "5": "North Center", "6": "Lake View", "7": "Lincoln Park", "8": "Near North Side",
+#     "9": "Edison Park", "10": "Norwood Park", "11": "Jefferson Park", "12": "Forest Glen",
+#     "13": "North Park", "14": "Albany Park", "15": "Portage Park", "16": "Irving Park",
+#     "17": "Dunning", "18": "Montclare", "19": "Belmont Cragin", "20": "Hermosa",
+#     "21": "Avondale", "22": "Logan Square", "23": "Humboldt Park", "24": "West Town",
+#     "25": "Austin", "26": "West Garfield Park", "27": "East Garfield Park", "28": "Near West Side",
+#     "29": "North Lawndale", "30": "South Lawndale", "31": "Lower West Side", "32": "Loop",
+#     "33": "Near South Side", "34": "Armour Square", "35": "Douglas", "36": "Oakland",
+#     "37": "Fuller Park", "38": "Grand Boulevard", "39": "Kenwood", "40": "Washington Park",
+#     "41": "Hyde Park", "42": "Woodlawn", "43": "South Shore", "44": "Chatham",
+#     "45": "Avalon Park", "46": "South Chicago", "47": "Burnside", "48": "Calumet Heights",
+#     "49": "Roseland", "50": "Pullman", "51": "South Deering", "52": "East Side",
+#     "53": "West Pullman", "54": "Riverdale", "55": "Hegewisch", "56": "Garfield Ridge",
+#     "57": "Archer Heights", "58": "Brighton Park", "59": "McKinley Park", "60": "Bridgeport",
+#     "61": "New City", "62": "West Elsdon", "63": "Gage Park", "64": "Clearing",
+#     "65": "West Lawn", "66": "Chicago Lawn", "67": "West Englewood", "68": "Englewood",
+#     "69": "Greater Grand Crossing", "70": "Ashburn", "71": "Auburn Gresham", "72": "Beverly",
+#     "73": "Washington Heights", "74": "Mount Greenwood", "75": "Morgan Park",
+#     "76": "O'Hare", "77": "Edgewater"
+# }
+
+# df = df.with_columns([
+#     pl.col("COMMUNITY_AREA").cast(pl.Utf8).replace(community_area_names).alias("COMMUNITY_AREA_NAME")
+# ])
+
+# # Convert into more usefull date format
+# df = df.with_columns([
+#     pl.col("CREATED_DATE").str.to_datetime("%m/%d/%Y %I:%M:%S %p"),
+#     pl.col("CLOSED_DATE").str.to_datetime("%m/%d/%Y %I:%M:%S %p")
+# ])
+
+# # Compute response time 
+# df = df.with_columns([
+#     ((pl.col("CLOSED_DATE") - pl.col("CREATED_DATE"))
+#     .dt.total_seconds() / 3600)
+#     .alias("RESPONSE_TIME_HOURS")
+# ])
+
+
+# df = df.with_columns([
+#     pl.col("SR_TYPE").str.strip_chars().str.to_titlecase(),
+#     pl.col("COMMUNITY_AREA").cast(pl.Utf8).str.strip_chars()
+# ])
+
+# # get rid of duplicates and nulls
+# df = df.drop_nulls(subset=["LATITUDE", "LONGITUDE"])
+# df = df.drop_nulls(subset = "CLOSED_DATE")
+# df = df.unique(subset=["SR_NUMBER"])
+# df = df.filter(pl.col("DUPLICATE") == False)
 
 # query1 = """
 #     SELECT "SR_TYPE", COUNT(*) as count
@@ -126,50 +126,100 @@ df = df.filter(pl.col("DUPLICATE") == False)
 # """
 
 # add something that created a proportion IN COMPARISON TO OTHER INCOME TYPES
-query5 = """
+# query5 = """
+#     SELECT 
+#         r."SR_TYPE",
+#         r."COMMUNITY_AREA_NAME",
+#         COUNT(*) as count,
+#         AVG(r."RESPONSE_TIME_HOURS") as avg_response_hours,
+#         ROUND(
+#             d."Under $25,000"::numeric / NULLIF(
+#                 d."Under $25,000" + d."$25,000 to $49,999" + d."$50,000 to $74,999" +
+#                 d."$75,000 to $125,000" + d."$125,000 +", 0
+#             ), 4
+#         ) as pct_under_25k
+#     FROM requests r
+#     LEFT JOIN community_demographics d
+#         ON r."COMMUNITY_AREA_NAME" = d."COMMUNITY_AREA_NAME"
+#     WHERE r."SR_TYPE" NOT IN ('311 Information Only Call', 'Aircraft Noise Complaint')
+#     AND r."COMMUNITY_AREA_NAME" IS NOT NULL
+#     GROUP BY r."SR_TYPE", r."COMMUNITY_AREA_NAME", d."Under $25,000", d."$25,000 to $49,999",
+#              d."$50,000 to $74,999", d."$75,000 to $125,000", d."$125,000 +"
+#     ORDER BY r."SR_TYPE", avg_response_hours DESC
+# """
+
+#test for correlation between corr service times and sub 25k income
+# toward one positive, toward -1 megative corr
+# query6 = """
+#     SELECT 
+#         CORR(pct_under_25k, avg_response_hours) as pearson_r,
+#         COUNT(*) as n_areas
+#     FROM (
+#         SELECT 
+#             r."COMMUNITY_AREA_NAME",
+#             AVG(r."RESPONSE_TIME_HOURS") as avg_response_hours,
+#             ROUND(
+#                 d."Under $25,000"::numeric / NULLIF(
+#                     d."Under $25,000" + d."$25,000 to $49,999" + d."$50,000 to $74,999" +
+#                     d."$75,000 to $125,000" + d."$125,000 +", 0
+#                 ), 4
+#             ) as pct_under_25k
+#         FROM requests r
+#         LEFT JOIN community_demographics d
+#             ON r."COMMUNITY_AREA_NAME" = d."COMMUNITY_AREA_NAME"
+#         WHERE r."SR_TYPE" NOT IN ('311 Information Only Call', 'Aircraft Noise Complaint')
+#         AND r."COMMUNITY_AREA_NAME" IS NOT NULL
+#         AND d."Under $25,000" IS NOT NULL
+#         GROUP BY r."COMMUNITY_AREA_NAME", d."Under $25,000", d."$25,000 to $49,999",
+#                  d."$50,000 to $74,999", d."$75,000 to $125,000", d."$125,000 +"
+#     ) area_stats
+# """
+
+query7 = """
     SELECT 
         r."SR_TYPE",
-        r."COMMUNITY_AREA_NAME",
-        COUNT(*) as count,
         AVG(r."RESPONSE_TIME_HOURS") as avg_response_hours,
-        ROUND(
-            d."Under $25,000"::numeric / NULLIF(
+        AVG(
+            d."$125,000 +"::numeric / NULLIF(
                 d."Under $25,000" + d."$25,000 to $49,999" + d."$50,000 to $74,999" +
                 d."$75,000 to $125,000" + d."$125,000 +", 0
-            ), 4
-        ) as pct_under_25k
+            )
+        ) as avg_pct_high_income,
+        COUNT(*) as total_requests
     FROM requests r
     LEFT JOIN community_demographics d
         ON r."COMMUNITY_AREA_NAME" = d."COMMUNITY_AREA_NAME"
     WHERE r."SR_TYPE" NOT IN ('311 Information Only Call', 'Aircraft Noise Complaint')
     AND r."COMMUNITY_AREA_NAME" IS NOT NULL
-    GROUP BY r."SR_TYPE", r."COMMUNITY_AREA_NAME", d."Under $25,000", d."$25,000 to $49,999",
-             d."$50,000 to $74,999", d."$75,000 to $125,000", d."$125,000 +"
-    ORDER BY r."SR_TYPE", avg_response_hours DESC
+    AND d."$125,000 +" IS NOT NULL
+    GROUP BY r."SR_TYPE"
+    ORDER BY avg_response_hours DESC
 """
+result = pl.read_database_uri(query7, connection_string)
+print(result)
 
-sr_by_area = pl.read_database_uri(query5, connection_string)
+# sr_by_area = pl.read_database_uri(query5, connection_string)
 # with pl.Config(tbl_rows=50):
 #     print(sr_by_area) 
 
 
-top_types = (sr_by_area
-    .group_by("SR_TYPE")
-    .agg(pl.col("count").sum().alias("total"))
-    .sort("total", descending=True)
-    .head(5)
-    .get_column("SR_TYPE")
-    .to_list()
-)
+# top_types = (sr_by_area
+#     .group_by("SR_TYPE")
+#     .agg(pl.col("count").sum().alias("total"))
+#     .sort("total", descending=True)
+#     .head(5)
+#     .get_column("SR_TYPE")
+#     .to_list()
+# )
 
-filtered = (sr_by_area
-    .filter(pl.col("SR_TYPE").is_in(top_types))
-    .sort(["SR_TYPE", "avg_response_hours"], descending=[False, True])
-)
+# filtered = (sr_by_area
+#     .filter(pl.col("SR_TYPE").is_in(top_types))
+#     .sort(["SR_TYPE", "avg_response_hours"], descending=[False, True])
+# )
 
-#why am i printing both 
-with pl.Config(tbl_rows=100): #what does 100 do?
-    print(filtered)
+# #why am i printing both 
+# with pl.Config(tbl_rows=100): #what does 100 do?
+#     print(filtered)
 
 # streaming engine required due to RAM limitations on local machine 
 # if_table_exists is the correct arg name as of Polars 1.25+, originally experienced problems with

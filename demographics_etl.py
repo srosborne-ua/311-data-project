@@ -26,15 +26,3 @@ df = df.select(["COMMUNITY_AREA_NAME"] + income_cols)
 print(df)
 
 #df.write_database("community_demographics", connection_string, if_table_exists="replace", engine="adbc")
-
-debug1 = pl.read_database_uri(
-    """SELECT "COMMUNITY_AREA_NAME" FROM community_demographics WHERE "COMMUNITY_AREA_NAME" ILIKE '%mckinley%'""",
-    connection_string
-)
-print("demographics:", debug1)
-
-debug2 = pl.read_database_uri(
-    """SELECT DISTINCT "COMMUNITY_AREA_NAME" FROM requests WHERE "COMMUNITY_AREA_NAME" ILIKE '%mckinley%'""",
-    connection_string
-)
-print("requests:", debug2)
