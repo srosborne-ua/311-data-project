@@ -13,7 +13,7 @@ VIEW THE INTERACTIVE TABLEAU DASHBOARD HERE: https://public.tableau.com/app/prof
 
 The Finding:
 My initial hypothesis going in was that lower-income neighborhoods would see slower response times. the data actually contradicts this 
-presuposition
+presupposition
 
 Across Chicago's 77 community areas, the percentage of low-income residents is negatively correlated with average 311 response time (r = -0.51). In summary, neighborhoods with a higher proportion of low-income residents tend to get slightly faster average response times on average, not slower ones.
 
