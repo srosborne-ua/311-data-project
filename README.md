@@ -2,7 +2,7 @@ Chicago 311 Service Equity Analysis
 
 Do lower-income neighborhoods wait longer for city services in Chicago?
 
-This project analyzes over a year of Chicago 311 service request data across all 77 community areas to test whether neighborhood income level predicts how quickly the city responds to non-emergency service requests — potholes, graffiti, abandoned vehicles, sanitation issues, and more.
+This project analyzes over a year of Chicago 311 service request data across all 77 community areas to test whether neighborhood income level predicts how quickly the city responds to non-emergency service requests such as potholes, graffiti, abandoned vehicles, sanitation issues, etc.
 
 VIEW THE INTERACTIVE TABLEAU DASHBOARD HERE: https://public.tableau.com/app/profile/sage.osborne/viz/Chicago_311_Data_Project/map_dashboard
 
