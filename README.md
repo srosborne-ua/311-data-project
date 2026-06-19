@@ -6,7 +6,7 @@ This project analyzes over a year of Chicago 311 service request data across all
 
 Data Source: Chicago 311 Data Portal
 
-tech stack: The data starts as raw CSVs pulled from the Chicago Data Portal and is extracted and loaded with Python. A lot of cleaning work is then handled by polars. The data was then loaded into a postgreSQL database for analysis including aggregating response times by community area and request type, computing the correlation between income and response time, and running the window functions behind the seasonal breakdown. The results are exported as pre-aggregated CSVs and brought into Tableau, which is used purely for visualization
+tech stack: The data starts as raw CSVs pulled from the Chicago Data Portal and is extracted and loaded with Python. A lot of cleaning work is then handled with polars. The data was then loaded into a postgreSQL database for analysis including aggregating response times by community area and request type, computing the correlation between income and response time, and running the window functions behind the seasonal breakdown. The results are exported as pre-aggregated CSVs and brought into Tableau, which is used purely for visualization
 
 VIEW THE INTERACTIVE TABLEAU DASHBOARD HERE: https://public.tableau.com/app/profile/sage.osborne/viz/Chicago_311_Data_Project/map_dashboard
 
